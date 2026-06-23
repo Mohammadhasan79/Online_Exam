@@ -1,0 +1,27 @@
+# Build results
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

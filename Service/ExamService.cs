@@ -1,0 +1,68 @@
+﻿using System.Security.Claims;
+using OnlineExam.Common;
+using OnlineExam.DTOs.ExamDTOs;
+using OnlineExam.Entity;
+using OnlineExam.RepositoryInterfaces;
+using OnlineExam.ServiceInterfaces;
+using OnlineExam.UnitOfWork;
+
+namespace OnlineExam.Service
+{
+    public class ExamService : IExamService
+    {
+        private readonly IExamRepository _examRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        public ExamService(IExamRepository examRepository, IUnitOfWork unitOfWork)
+        {
+            _examRepository = examRepository;
+            _unitOfWork = unitOfWork;
+        }
+        public async Task<Result> CreateExamAsync(string userId, CreateExamDto dto)
+        {
+            if (dto == null) return Result.Fail("Data Entry Is Null");
+
+            var exam = new Exam
+            {
+                ExamName = dto.ExamName,
+                ExamDescription = dto.ExamDescription,
+                StartTime = dto.StartTime,
+                CreateBy = userId
+            };
+
+            await _examRepository.AddAsync(exam);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Ok();
+        }
+        public async Task<Result> UpdateExamAsync(int examId, string userId, CreateExamDto dto)
+        {
+            if (dto == null) return Result.Fail("Data Entry Is Null");
+            
+            var exam = await _examRepository.GetByExamIdAsync(examId);
+            if (exam == null) return Result.Fail("Exam Not Found");
+
+            if (userId != exam.CreateBy) return Result.Fail("Forbid");
+
+
+            exam.ExamName = dto.ExamName;
+            exam.ExamDescription = dto.ExamDescription;
+            exam.StartTime = dto.StartTime;
+
+            _examRepository.UpdateAsync(exam);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Ok();
+        }
+        public async Task<Result> DeleteExamAsync(int examId, string userId)
+        {
+            var exam = await _examRepository.GetByExamIdAsync(examId);
+            if (exam == null) return Result.Fail("Exam Not Found");
+
+            if (userId != exam.CreateBy) return Result.Fail("Forbid");
+
+            _examRepository.DeleteAsync(exam);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Ok();
+        }
+
+
+    }
+}

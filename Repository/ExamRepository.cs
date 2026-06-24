@@ -45,10 +45,10 @@ namespace OnlineExam.Repository
         }
         public async Task<List<UserForListDto>> GetAllUserForList()
         {
-            return await _context.Users.Where(a => !a.UserName.Contains("@")).Select(u => new UserForListDto
+            return await _context.Users.Where(a => !a.UserName!.Contains("@")).Select(u => new UserForListDto
             {
                 UserId = u.Id,
-                UserName = u.UserName,
+                UserName = u.UserName!,
                 FirstName = u.FistName,
                 LastName = u.LastName
             }).ToListAsync();

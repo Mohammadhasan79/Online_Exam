@@ -81,7 +81,7 @@ namespace OnlineExam.Service
             {
                 Token = refreshToken,
                 UserId = user.Id,
-                ExpireTime = DateTime.UtcNow.AddDays(7)
+                ExpireTime = DateTime.Now.AddDays(7)
             };
             await _context.RefreshToken.AddAsync(token);
             await _context.SaveChangesAsync();
@@ -105,7 +105,7 @@ namespace OnlineExam.Service
             if (userToken.IsRevoked)
                 return Result<TokenResponse>.Fail("Refresh Token Revoked");
 
-            if (userToken.ExpireTime < DateTime.UtcNow)
+            if (userToken.ExpireTime < DateTime.Now)
                 return Result<TokenResponse>.Fail("Refresh Token Expire");
 
             var newAccessToken = await GenerateToken(userToken.User!);
@@ -115,7 +115,7 @@ namespace OnlineExam.Service
             {
                 Token = newRefreshToken,
                 UserId = userToken.UserId,
-                ExpireTime = DateTime.UtcNow.AddDays(7)
+                ExpireTime = DateTime.Now.AddDays(7)
             };
 
             userToken.IsRevoked = true;
@@ -151,7 +151,7 @@ namespace OnlineExam.Service
                 issuer,
                 audience,
                 claims,
-                expires : DateTime.UtcNow.AddMinutes(expiry),
+                expires : DateTime.Now.AddMinutes(expiry),
                 signingCredentials : credentials
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);

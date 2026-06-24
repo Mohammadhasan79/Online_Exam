@@ -29,9 +29,10 @@ namespace OnlineExam.Service
                 UserList = users
             });
         }
+        public async Task<Result> AddExamToStudentAsync(string studentId, int examId)
+        {
 
-
-
+        }
         public async Task<Result> CreateExamAsync(string userId, CreateExamDto dto)
         {
             if (dto == null) return Result.Fail("Data Entry Is Null");
@@ -41,6 +42,7 @@ namespace OnlineExam.Service
                 ExamName = dto.ExamName,
                 ExamDescription = dto.ExamDescription,
                 StartTime = dto.StartTime,
+                ExamTime = dto.ExamTime,
                 CreateBy = userId
             };
 
@@ -61,6 +63,7 @@ namespace OnlineExam.Service
             exam.ExamName = dto.ExamName;
             exam.ExamDescription = dto.ExamDescription;
             exam.StartTime = dto.StartTime;
+            exam.ExamTime = dto.ExamTime;
 
             _examRepository.UpdateAsync(exam);
             await _unitOfWork.SaveChangesAsync();
@@ -89,7 +92,10 @@ namespace OnlineExam.Service
             }
             else if(userRole == "Student")
             {
-                isAccess = await _examRepository.CheckHaveExam(examId, userId);
+                isAccess = await _examRepository
+                    .CheckHaveExam(examId, userId) 
+                    && exam.StartTime <= DateTime.Now 
+                    && exam.StartTime.AddMinutes(exam.ExamTime) > DateTime.Now;    
             }
             if(!isAccess) return Result<ShowExamDto>.Fail("Forbid");
 
@@ -99,6 +105,7 @@ namespace OnlineExam.Service
                 ExamName = exam.ExamName,
                 ExamDescription = exam.ExamDescription,
                 StartTime = exam.StartTime,
+                ExamTime = exam.ExamTime,
                 Question = exam.Question.Select(q => new ShowQuestionDto
                 {
                     Id = q.Id,

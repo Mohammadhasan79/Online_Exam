@@ -3,8 +3,7 @@
     public class ExamList
     {
         public int Id {  get; set; }
-        public DateTime StartTime { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
         public string UserId { get; set; } = string.Empty;
         public int ExamId { get; set; }
         public User? User { get; set; }

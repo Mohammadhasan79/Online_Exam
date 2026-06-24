@@ -12,5 +12,6 @@ namespace OnlineExam.ServiceInterfaces
         Task<Result> DeleteExamAsync(int examId, string userId);
         Task<Result<ShowExamDto>> GetExamAndQuestionByIdAsync(int examId, string userId, string userRole);
         Task<Result<ExamAndUserListDto>> GetUserExamListAsync(string userId);
+        Task<Result> AddExamToStudentAsync(string studentId, int examId);
     }
 }

@@ -28,7 +28,14 @@ namespace OnlineExam.Controllers
             if (!result.Success) return BadRequest(result);
             return Ok(result);
         }
-
+        [HttpPost("[action]")]
+        [Authorize(Roles ="Prof")]
+        public async Task<IActionResult> AddExamToStudent(string studentId, int examId)
+        {
+            var result = await _examService.AddExamToStudentAsync(studentId, examId);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
+        }
         [HttpGet("{examId}")]
         public async Task<IActionResult> GetExamById(int examId)
         {

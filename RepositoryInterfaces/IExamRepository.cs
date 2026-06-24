@@ -1,4 +1,5 @@
-﻿using OnlineExam.Entity;
+﻿using OnlineExam.DTOs.ExamListDTOs;
+using OnlineExam.Entity;
 
 namespace OnlineExam.RepositoryInterfaces
 {
@@ -8,5 +9,8 @@ namespace OnlineExam.RepositoryInterfaces
         void UpdateAsync(Exam exam);
         void DeleteAsync(Exam exam);
         Task<Exam?> GetByExamIdAsync(int examId);
+        Task<bool> CheckHaveExam(int examId, string userId);
+        Task<List<ExamForListDto>> GetExamListByUserId(string userId);
+        Task<List<UserForListDto>> GetAllUserForList();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Win32;
 using OnlineExam.DTOs.QuestionDTOs;
 using OnlineExam.Service;
@@ -8,6 +9,7 @@ namespace OnlineExam.Controllers
 {
     [ApiController]
     [Route("api/exams/{examId}/[controller]")]
+    [Authorize(Roles = "Prof,Student")]
     public class QuestionsController : ControllerBase
     {
         private readonly IQuestionService _questionService;

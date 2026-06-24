@@ -1,6 +1,8 @@
 ﻿using System.Security.Claims;
 using OnlineExam.Common;
 using OnlineExam.DTOs.ExamDTOs;
+using OnlineExam.DTOs.ExamListDTOs;
+using OnlineExam.DTOs.QuestionDTOs;
 using OnlineExam.Entity;
 using OnlineExam.RepositoryInterfaces;
 using OnlineExam.ServiceInterfaces;
@@ -17,6 +19,19 @@ namespace OnlineExam.Service
             _examRepository = examRepository;
             _unitOfWork = unitOfWork;
         }
+        public async Task<Result<ExamAndUserListDto>> GetUserExamListAsync(string userId)
+        {
+            var exams = await _examRepository.GetExamListByUserId(userId);
+            var users = await _examRepository.GetAllUserForList();
+            return Result<ExamAndUserListDto>.Ok(new ExamAndUserListDto
+            {
+                ExamsList = exams,
+                UserList = users
+            });
+        }
+
+
+
         public async Task<Result> CreateExamAsync(string userId, CreateExamDto dto)
         {
             if (dto == null) return Result.Fail("Data Entry Is Null");
@@ -62,7 +77,43 @@ namespace OnlineExam.Service
             await _unitOfWork.SaveChangesAsync();
             return Result.Ok();
         }
+        public async Task<Result<ShowExamDto>> GetExamAndQuestionByIdAsync(int examId, string userId, string userRole)
+        {
+            bool isAccess = false;
+            var exam = await _examRepository.GetByExamIdAsync(examId);
+            if (exam == null) return Result<ShowExamDto>.Fail("Exam Not Found");
 
+            if (userRole == "Prof")
+            {
+                isAccess = userId == exam.CreateBy || await _examRepository.CheckHaveExam(examId, userId);
+            }
+            else if(userRole == "Student")
+            {
+                isAccess = await _examRepository.CheckHaveExam(examId, userId);
+            }
+            if(!isAccess) return Result<ShowExamDto>.Fail("Forbid");
+
+            var showExam = new ShowExamDto
+            {
+                Id = exam.Id,
+                ExamName = exam.ExamName,
+                ExamDescription = exam.ExamDescription,
+                StartTime = exam.StartTime,
+                Question = exam.Question.Select(q => new ShowQuestionDto
+                {
+                    Id = q.Id,
+                    QuestionText = q.QuestionText,
+                    QuestionType = q.QuestionType,
+                    Options = q.Options.Select(o => new ShowQuestionOptionDto
+                    {
+                        Id = o.Id,
+                        Option = o.Option,
+                        OptionKey = o.OptionKey
+                    }).ToList()
+                }).ToList(),
+            };
+            return Result<ShowExamDto>.Ok(showExam);
+        }
 
     }
 }

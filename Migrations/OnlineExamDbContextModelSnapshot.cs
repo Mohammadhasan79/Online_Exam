@@ -221,33 +221,6 @@ namespace OnlineExam.Migrations
                     b.ToTable("Exam");
                 });
 
-            modelBuilder.Entity("OnlineExam.Entity.ExamList", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ExamId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExamId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ExamLists");
-                });
-
             modelBuilder.Entity("OnlineExam.Entity.Question", b =>
                 {
                     b.Property<int>("Id")
@@ -329,6 +302,33 @@ namespace OnlineExam.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshToken");
+                });
+
+            modelBuilder.Entity("OnlineExam.Entity.StudentAssign", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("StudentAssigns");
                 });
 
             modelBuilder.Entity("OnlineExam.Entity.User", b =>
@@ -486,25 +486,6 @@ namespace OnlineExam.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("OnlineExam.Entity.ExamList", b =>
-                {
-                    b.HasOne("OnlineExam.Entity.Exam", "Exam")
-                        .WithMany()
-                        .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OnlineExam.Entity.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Exam");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("OnlineExam.Entity.Question", b =>
                 {
                     b.HasOne("OnlineExam.Entity.Exam", "Exam")
@@ -534,6 +515,25 @@ namespace OnlineExam.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OnlineExam.Entity.StudentAssign", b =>
+                {
+                    b.HasOne("OnlineExam.Entity.Exam", "Exam")
+                        .WithMany()
+                        .HasForeignKey("ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnlineExam.Entity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
 
                     b.Navigation("User");
                 });

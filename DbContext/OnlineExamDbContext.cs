@@ -10,7 +10,7 @@ namespace OnlineExam.DbContext
         public OnlineExamDbContext(DbContextOptions<OnlineExamDbContext> options) : base(options) { }
         public DbSet<Answer> Answers { get; set; }
         public DbSet<Exam> Exam { get; set; }
-        public DbSet<ExamList> ExamLists { get; set; }
+        public DbSet<StudentAssign> StudentAssigns { get; set; }
         public DbSet<Question> Question { get; set; }
         public DbSet<QuestionOption> QuestionOption { get; set; }
         public DbSet<RefreshToken> RefreshToken { get; set; }

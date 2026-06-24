@@ -29,8 +29,21 @@ namespace OnlineExam.Service
                 UserList = users
             });
         }
-        public async Task<Result> AddExamToStudentAsync(string studentId, int examId)
+        public async Task<Result> AddExamToStudentAsync(string userId, string studentId, int examId)
         {
+            bool checkExist = await _examRepository.CheckUserAndExamExist(userId, studentId, examId);
+
+            if (!checkExist) 
+                return Result.Fail("User/Exam Duplicate/NotExist or You do not have access to this Exam.");
+            var newAdd = new StudentAssign
+            {
+                IsActive = true,
+                UserId = studentId,
+                ExamId = examId
+            };
+            await _examRepository.AddExamToUser(newAdd);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Ok("Add Student Success");
 
         }
         public async Task<Result> CreateExamAsync(string userId, CreateExamDto dto)
@@ -88,7 +101,7 @@ namespace OnlineExam.Service
 
             if (userRole == "Prof")
             {
-                isAccess = userId == exam.CreateBy || await _examRepository.CheckHaveExam(examId, userId);
+                isAccess = userId == exam.CreateBy;
             }
             else if(userRole == "Student")
             {
@@ -122,5 +135,77 @@ namespace OnlineExam.Service
             return Result<ShowExamDto>.Ok(showExam);
         }
 
+        public async Task<Result<List<ShowExamDto>>> GetExamAndQuestionByUserIdAsync(string userId)
+        {
+            var exams = await _examRepository.GetExamByUserIdAsync(userId);
+            return Result<List<ShowExamDto>>.Ok(exams.Select(e => new ShowExamDto
+            {
+                Id = e.Id,
+                ExamName = e.ExamName,
+                ExamDescription = e.ExamDescription,
+                StartTime = e.StartTime,
+                ExamTime = e.ExamTime,
+                Question = e.Question.Select(q => new ShowQuestionDto
+                {
+                    Id = q.Id,
+                    QuestionText = q.QuestionText,
+                    QuestionType = q.QuestionType,
+                    Options = q.Options.Select(o => new ShowQuestionOptionDto
+                    {
+                        Id = o.Id,
+                        Option = o.Option,
+                        OptionKey = o.OptionKey
+                    }).ToList()
+                }).ToList(),
+            }).ToList());
+            
+        }
+
+
+        public async Task<Result> DeleteStudentAssignAsync(string userId, int studentAssignId)
+        {
+            var studentAssign = await _examRepository.GetStudentAssign(userId, studentAssignId);
+
+            if (studentAssign == null)
+                return Result.Fail("StudentAssign Not Exist or You do not have access to this Exam.");
+
+             _examRepository.DeleteStudentAssignAsync(studentAssign);
+
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Ok("Delete Success");
+        }
+        public async Task<Result<List<ShowStudentAssign>>> GetStudentAssignListAsync(string userId, string userRole)
+        {
+            if(userRole == "Prof")
+            {
+                var profAssign = await _examRepository.GetProfExamList(userId);
+                return Result<List<ShowStudentAssign>>.Ok(
+                   profAssign.Select(a => new ShowStudentAssign
+                   {
+                       StudentAssignId = a.Id,
+                       UserName = a.User!.UserName,
+                       FirstName = a.User.FistName,
+                       ExamId = a.ExamId,
+                       ExamName = a.Exam!.ExamName,
+                       StartTime = a.Exam.StartTime,
+                       ExamTime = a.Exam.ExamTime,
+                   }).ToList());
+            }
+            if (userRole != "Student") return Result<List<ShowStudentAssign>>.Fail($"Your UnAuthorize {userRole}");
+
+            var studAssign = await _examRepository.GetStudentExamList(userId);
+
+
+                return Result<List<ShowStudentAssign>>.Ok(
+                       studAssign.Select(a => new ShowStudentAssign
+                       {
+                           StudentAssignId = a.Id,
+                           ExamId = a.ExamId,
+                           ExamName = a.Exam!.ExamName,
+                           StartTime = a.Exam.StartTime,
+                           ExamTime = a.Exam.ExamTime,
+                       }).ToList());
+
+        }
     }
 }

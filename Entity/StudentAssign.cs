@@ -1,6 +1,6 @@
 ﻿namespace OnlineExam.Entity
 {
-    public class ExamList
+    public class StudentAssign
     {
         public int Id {  get; set; }
         public bool IsActive { get; set; } = true;

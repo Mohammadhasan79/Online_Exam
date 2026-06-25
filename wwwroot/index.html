@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>سامانه آزمون آنلاین</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=IBM+Plex+Mono:wght@500;600&family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#F4F5F1;
+  --paper-raised:#FFFFFF;
+  --ink:#181A1B;
+  --graphite:#5B6058;
+  --rule:#CBCFC5;
+  --rule-soft:#DEE1D8;
+  --stamp:#A6332B;
+  --stamp-soft:#F3E3E1;
+  --pass:#29614F;
+  --pass-soft:#E1ECE7;
+  --focus:#1D5C9E;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(24,26,27,.06), 0 8px 24px rgba(24,26,27,.05);
+  --font-display:'Fraunces', serif;
+  --font-body:'Vazirmatn','Inter',sans-serif;
+  --font-mono:'IBM Plex Mono', monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:15px;
+  line-height:1.55;
+  min-height:100vh;
+  background-image:
+    linear-gradient(var(--rule-soft) 1px, transparent 1px);
+  background-size: 100% 38px;
+  background-attachment:local;
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+}
+::selection{background:var(--stamp-soft);}
+a{color:inherit;}
+button{font-family:inherit;}
+:focus-visible{outline:2.5px solid var(--focus); outline-offset:2px; border-radius:4px;}
+
+h1,h2,h3{font-family:var(--font-display); font-weight:600; margin:0; letter-spacing:.2px;}
+.mono{font-family:var(--font-mono); letter-spacing:.02em;}
+
+/* ============ LAYOUT SHELL ============ */
+#app{min-height:100vh; display:flex; flex-direction:column;}
+
+.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px; padding:14px 28px;
+  background:rgba(244,245,241,.92);
+  backdrop-filter:blur(6px);
+  border-bottom:1.5px solid var(--ink);
+}
+.brand{display:flex; align-items:baseline; gap:10px;}
+.brand .mark{
+  font-family:var(--font-display); font-weight:700; font-size:21px;
+}
+.brand .mark sup{font-size:11px; font-family:var(--font-mono); color:var(--stamp); top:-10px;}
+.brand .sub{font-size:11.5px; color:var(--graphite); font-family:var(--font-mono);}
+.top-right{display:flex; align-items:center; gap:14px;}
+
+.stamp-badge{
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:var(--font-mono); font-size:11px; font-weight:600;
+  letter-spacing:.06em; text-transform:uppercase;
+  padding:5px 11px; border:1.5px solid currentColor; border-radius:3px;
+  transform:rotate(-2deg);
+  user-select:none;
+}
+.stamp-badge.role-prof{color:var(--stamp);}
+.stamp-badge.role-student{color:var(--pass);}
+.stamp-badge.status-open{color:var(--pass);}
+.stamp-badge.status-upcoming{color:var(--graphite);}
+.stamp-badge.status-closed{color:var(--stamp);}
+
+.btn{
+  font-size:13.5px; font-weight:600; padding:9px 16px; border-radius:7px;
+  border:1.5px solid var(--ink); background:var(--paper-raised); color:var(--ink);
+  cursor:pointer; transition:transform .12s ease, box-shadow .12s ease;
+  display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+}
+.btn:hover{box-shadow:var(--shadow); transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn-primary{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+.btn-stamp{background:var(--stamp); color:#fff; border-color:var(--stamp);}
+.btn-ghost{border-color:var(--rule); color:var(--graphite); background:transparent;}
+.btn-sm{padding:6px 11px; font-size:12.5px; border-radius:6px;}
+.btn:disabled{opacity:.45; cursor:not-allowed; transform:none; box-shadow:none;}
+
+main{flex:1; width:100%; max-width:980px; margin:0 auto; padding:28px 20px 80px;}
+
+/* ============ TABS (paper tabs) ============ */
+.tabs{display:flex; gap:6px; margin-bottom:22px; border-bottom:1.5px solid var(--ink);}
+.tab{
+  font-family:var(--font-display); font-size:15px; font-weight:600;
+  padding:9px 18px 11px; cursor:pointer; color:var(--graphite);
+  background:transparent; border:none; border-radius:8px 8px 0 0;
+  position:relative; top:1.5px;
+}
+.tab.active{
+  color:var(--ink); background:var(--paper-raised);
+  border:1.5px solid var(--ink); border-bottom-color:var(--paper-raised);
+}
+
+/* ============ CARDS / SHEETS ============ */
+.sheet{
+  background:var(--paper-raised); border:1.5px solid var(--ink);
+  border-radius:var(--radius); padding:22px 24px; margin-bottom:18px;
+  box-shadow:var(--shadow);
+}
+.sheet-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap;}
+.sheet-head h2{font-size:19px;}
+.muted{color:var(--graphite); font-size:13px;}
+.divider{border:none; border-top:1px dashed var(--rule); margin:16px 0;}
+
+.row-list{display:flex; flex-direction:column;}
+.row-item{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:13px 4px; border-bottom:1px solid var(--rule-soft); flex-wrap:wrap;
+}
+.row-item:last-child{border-bottom:none;}
+.row-item:hover{background:rgba(0,0,0,.015);}
+.row-main{display:flex; flex-direction:column; gap:3px; min-width:0;}
+.row-title{font-weight:600; font-size:14.5px;}
+.row-meta{font-size:12.5px; color:var(--graphite); font-family:var(--font-mono);}
+.row-actions{display:flex; gap:6px; flex-shrink:0;}
+
+/* ============ FORMS ============ */
+label{display:block; font-size:12.5px; font-weight:600; color:var(--graphite); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em;}
+.field{margin-bottom:14px;}
+input[type=text], input[type=password], input[type=number], input[type=datetime-local], textarea, select{
+  width:100%; padding:10px 12px; font-size:14px; font-family:inherit;
+  border:1.5px solid var(--rule); border-radius:7px; background:var(--paper);
+  color:var(--ink); transition:border-color .12s ease;
+}
+input:focus, textarea:focus, select:focus{border-color:var(--ink);}
+textarea{resize:vertical; min-height:70px;}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.hint{font-size:12px; color:var(--graphite); margin-top:5px;}
+.form-actions{display:flex; gap:10px; margin-top:6px;}
+
+/* ============ ALERTS / TOAST ============ */
+.alert{
+  padding:11px 14px; border-radius:7px; font-size:13.5px; margin-bottom:14px;
+  border:1.5px solid var(--stamp); background:var(--stamp-soft); color:var(--stamp);
+}
+.alert.ok{border-color:var(--pass); background:var(--pass-soft); color:var(--pass);}
+#toast{
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(8px);
+  background:var(--ink); color:var(--paper); padding:11px 20px; border-radius:8px;
+  font-size:13.5px; font-weight:600; opacity:0; pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease; z-index:60; box-shadow:var(--shadow);
+}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+#toast.bad{background:var(--stamp);}
+
+/* ============ BUBBLES (signature element) ============ */
+.bubble-option{
+  display:flex; align-items:center; gap:12px; padding:10px 12px;
+  border:1.5px solid var(--rule); border-radius:8px; margin-bottom:8px;
+  cursor:pointer; background:var(--paper-raised); transition:border-color .12s, background .12s;
+}
+.bubble-option:hover{border-color:var(--ink);}
+.bubble-option.selected{border-color:var(--ink); background:rgba(24,26,27,.03);}
+.bubble{
+  width:30px; height:30px; min-width:30px; border-radius:50%;
+  border:2px solid var(--ink); display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-mono); font-weight:600; font-size:13px; color:var(--ink);
+  transition:background .12s, color .12s;
+}
+.bubble-option.selected .bubble{background:var(--ink); color:var(--paper);}
+.bubble-option.correct .bubble{background:var(--pass); color:#fff; border-color:var(--pass);}
+.bubble-option.wrong .bubble{background:var(--stamp); color:#fff; border-color:var(--stamp);}
+.option-text{font-size:14px;}
+
+/* ============ TIMER ============ */
+.exam-timer{
+  font-family:var(--font-mono); font-weight:600; font-size:15px;
+  padding:6px 12px; border:1.5px solid var(--ink); border-radius:6px;
+  letter-spacing:.04em;
+}
+.exam-timer.low{color:#fff; background:var(--stamp); border-color:var(--stamp); animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.55;}}
+
+/* ============ AUTH SCREEN ============ */
+.auth-wrap{
+  flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px;
+}
+.auth-card{width:100%; max-width:420px;}
+.auth-eyebrow{font-family:var(--font-mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--stamp); margin-bottom:8px;}
+.auth-title{font-size:30px; margin-bottom:6px;}
+.auth-sub{color:var(--graphite); font-size:13.5px; margin-bottom:24px;}
+.auth-tabs{display:flex; gap:0; margin-bottom:20px; border:1.5px solid var(--ink); border-radius:8px; overflow:hidden;}
+.auth-tabs button{
+  flex:1; padding:10px; font-weight:600; font-size:13.5px; background:var(--paper-raised); border:none; cursor:pointer;
+  border-left:1.5px solid var(--ink);
+}
+[dir=rtl] .auth-tabs button{border-left:none; border-right:1.5px solid var(--ink);}
+.auth-tabs button:first-child{border:none;}
+.auth-tabs button.active{background:var(--ink); color:var(--paper);}
+.api-base-field{margin-top:18px; padding-top:14px; border-top:1px dashed var(--rule);}
+.api-base-field .hint{font-family:var(--font-mono);}
+
+/* ============ EMPTY STATE ============ */
+.empty{text-align:center; padding:36px 18px; color:var(--graphite);}
+.empty .glyph{font-family:var(--font-display); font-size:34px; color:var(--rule); margin-bottom:8px;}
+
+.loading-line{font-family:var(--font-mono); font-size:12.5px; color:var(--graphite); padding:10px 0;}
+
+.qtype-tag{
+  font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.05em;
+  padding:2px 7px; border:1px solid var(--rule); border-radius:4px; color:var(--graphite);
+}
+
+@media (max-width:640px){
+  .topbar{padding:12px 14px;}
+  .brand .sub{display:none;}
+  main{padding:18px 12px 70px;}
+  .field-row{grid-template-columns:1fr;}
+  .sheet{padding:16px 16px;}
+  .row-item{flex-direction:column; align-items:stretch;}
+  .row-actions{justify-content:flex-end;}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast"></div>
+
+<script>
+/* ====================================================================
+   ONLINE EXAM — FRONTEND
+   Talks directly to the ASP.NET Core API in this repository:
+     POST /Api/User/Register            { UniversityCode, Password, FirstName, LastName }
+     POST /Api/User/Login               { UniversityCode, Password }
+     POST /Api/User/RefreshToken?refreshToken=...
+     GET  /api/Exams/GetUserAndExamList                 [Prof]
+     GET  /api/Exams/GetStudentAssignList               [Prof,Student]
+     POST /api/Exams/AddStudentAssign?studentId=&examId=[Prof]
+     DEL  /api/Exams/DeleteStudentAssign/{id}           [Prof]
+     GET  /api/Exams/GetExamById/{examId}
+     POST /api/Exams/CreateExam          { ExamName, ExamDescription, StartTime, ExamTime }
+     PUT  /api/Exams/CreateExam/{examId} (same body, update)
+     DEL  /api/Exams/DeleteExam?examId=
+     POST /api/exams/{examId}/Questions
+     PUT  /api/exams/{examId}/Questions/{questionId}
+     DEL  /api/exams/{examId}/Questions/{questionId}
+     POST /api/exams/{examId}/Answers/SubmitAnswers     [List<CreateAnswerDto>]
+     GET  /api/exams/{examId}/Answers/GetStudentsCompeletExamList   [Prof]
+     GET  /api/exams/{examId}/Answers/GetStudentAnswer?studId=      [Prof]
+
+   Note: the API has no CORS policy configured. If this page is served
+   from a different origin/port than the API, add to Program.cs:
+
+     builder.Services.AddCors(o => o.AddPolicy("frontend", p =>
+         p.WithOrigins("http://localhost:5500") // put this page's actual origin here
+          .AllowAnyHeader().AllowAnyMethod()));
+     ...
+     app.UseCors("frontend");   // before UseAuthorization()
+
+   Tokens are kept in memory only (no localStorage), per the constraints
+   of this delivery environment — logging in again after a page refresh
+   is expected. Swap in your own persistence when you deploy this.
+==================================================================== */
+
+const DEFAULT_API_BASE = "http://localhost:5198";
+const QTYPE = { 1: "Descriptive", 2: "MultiChoice", 3: "FillInBlank" };
+const QTYPE_FA = { 1: "تشریحی", 2: "چهارگزینه‌ای", 3: "جای‌خالی" };
+
+let state = {
+  apiBase: DEFAULT_API_BASE,
+  token: null,
+  refreshToken: null,
+  userId: null,
+  userName: null,
+  role: null,       // "Prof" | "Student"
+  route: "login",   // login | register | prof-exams | prof-roster | prof-results | student-exams | student-take
+  examId: null,
+  tick: null,
+};
+
+/* ---------------- low level fetch / auth ---------------- */
+
+function decodeJwt(token){
+  try{
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")));
+    const NID = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
+    const NAME = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
+    const ROLE = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role";
+    return {
+      userId: payload[NID] || payload["sub"] || payload["nameid"],
+      userName: payload[NAME] || payload["name"],
+      role: payload[ROLE] || payload["role"],
+    };
+  }catch(e){ return {}; }
+}
+
+async function api(path, { method="GET", body, query, auth=true, raw=false } = {}){
+  let url = state.apiBase + path;
+  if (query){
+    const qs = Object.entries(query).filter(([,v])=>v!==undefined && v!==null && v!=="")
+      .map(([k,v])=>`${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join("&");
+    if (qs) url += (url.includes("?") ? "&" : "?") + qs;
+  }
+  const headers = {};
+  if (body) headers["Content-Type"] = "application/json";
+  if (auth && state.token) headers["Authorization"] = "Bearer " + state.token;
+
+  let res;
+  try{
+    res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  }catch(netErr){
+    throw new ApiError("اتصال به سرور برقرار نشد. آدرس API و وضعیت اجرای بک‌اند و تنظیمات CORS را بررسی کنید.\n("+state.apiBase+")");
+  }
+
+  let data = null;
+  try{ data = await res.json(); }catch(e){ /* no body */ }
+
+  if (res.status === 401 && auth && state.refreshToken){
+    const refreshed = await tryRefresh();
+    if (refreshed) return api(path, { method, body, query, auth, raw });
+  }
+
+  if (raw) return { ok: res.ok, status: res.status, data };
+
+  if (!data) {
+    if (!res.ok) throw new ApiError("سرور پاسخ نامعتبر برگرداند (" + res.status + ")");
+    return null;
+  }
+  if (data.Success === false) throw new ApiError(data.Message || "درخواست ناموفق بود");
+  return data.Data !== undefined ? data.Data : data;
+}
+
+class ApiError extends Error {}
+
+async function tryRefresh(){
+  try{
+    const res = await fetch(state.apiBase + "/Api/User/RefreshToken?refreshToken=" + encodeURIComponent(state.refreshToken), { method:"POST" });
+    const data = await res.json();
+    if (data && data.Success){
+      applyTokens(data.Data);
+      return true;
+    }
+  }catch(e){}
+  doLogout(false);
+  return false;
+}
+
+function applyTokens(tokenResponse){
+  state.token = tokenResponse.Token;
+  state.refreshToken = tokenResponse.RefreshToken;
+  const claims = decodeJwt(state.token);
+  state.userId = claims.userId;
+  state.userName = claims.userName;
+  state.role = claims.role;
+}
+
+function doLogout(navigate=true){
+  state.token = null; state.refreshToken = null; state.userId = null; state.userName = null; state.role = null;
+  if (navigate) { state.route = "login"; render(); }
+}
+
+/* ---------------- toast ---------------- */
+function toast(msg, bad=false){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = bad ? "bad show" : "show";
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove("show"), 3200);
+}
+
+/* ---------------- date helpers ---------------- */
+function fmtDate(d){
+  const dt = new Date(d);
+  return dt.toLocaleString("fa-IR", { dateStyle:"medium", timeStyle:"short" });
+}
+function examStatus(startTime, durationMin){
+  const now = new Date();
+  const start = new Date(startTime);
+  const end = new Date(start.getTime() + durationMin*60000);
+  if (now < start) return { key:"upcoming", label:"شروع نشده", end, start };
+  if (now >= start && now < end) return { key:"open", label:"در حال برگزاری", end, start };
+  return { key:"closed", label:"پایان‌یافته", end, start };
+}
+function fmtRemain(ms){
+  if (ms < 0) ms = 0;
+  const totalSec = Math.floor(ms/1000);
+  const h = Math.floor(totalSec/3600);
+  const m = Math.floor((totalSec%3600)/60);
+  const s = totalSec%60;
+  return [h,m,s].map(n=>String(n).padStart(2,"0")).join(":");
+}
+
+/* ====================================================================
+   RENDER — root dispatcher
+==================================================================== */
+function render(){
+  const root = document.getElementById("app");
+  if (!state.token){
+    root.innerHTML = renderAuth();
+    bindAuthEvents();
+    return;
+  }
+  root.innerHTML = renderShell();
+  bindShellEvents();
+}
+
+function el(html){ const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; }
+function esc(s){ return (s??"").toString().replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+
+/* ====================================================================
+   AUTH SCREEN
+==================================================================== */
+function renderAuth(){
+  const mode = state.route === "register" ? "register" : "login";
+  return `
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-eyebrow">برگه ورود</div>
+      <h1 class="auth-title">اتاق آزمون</h1>
+      <div class="auth-sub">سامانه برگزاری و شرکت در آزمون‌های آنلاین</div>
+
+      <div class="auth-tabs">
+        <button data-mode="login" class="${mode==='login'?'active':''}">ورود</button>
+        <button data-mode="register" class="${mode==='register'?'active':''}">ثبت‌نام</button>
+      </div>
+
+      <div id="auth-alert"></div>
+
+      ${mode === "login" ? `
+      <form id="login-form">
+        <div class="field">
+          <label>کد دانشگاهی</label>
+          <input type="text" name="UniversityCode" placeholder="مثلاً 98123456 یا prof@univ.ac.ir" required autofocus />
+        </div>
+        <div class="field">
+          <label>رمز عبور</label>
+          <input type="password" name="Password" required />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" style="flex:1">ورود</button>
+        </div>
+      </form>
+      ` : `
+      <form id="register-form">
+        <div class="field-row">
+          <div class="field"><label>نام</label><input type="text" name="FirstName" required /></div>
+          <div class="field"><label>نام خانوادگی</label><input type="text" name="LastName" required /></div>
+        </div>
+        <div class="field">
+          <label>کد دانشگاهی</label>
+          <input type="text" name="UniversityCode" required placeholder="98123456 (دانشجو) یا name@univ.ac.ir (استاد)" />
+          <div class="hint">اگر کد شامل علامت @ باشد، حساب با نقش «استاد» ساخته می‌شود؛ در غیر این صورت «دانشجو».</div>
+        </div>
+        <div class="field"><label>رمز عبور</label><input type="password" name="Password" required /></div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" style="flex:1">ساخت حساب</button>
+        </div>
+      </form>
+      `}
+
+      <div class="api-base-field">
+        <label>آدرس سرور API</label>
+        <input type="text" id="api-base-input" value="${esc(state.apiBase)}" />
+        <div class="hint">پیش‌فرض: ${esc(DEFAULT_API_BASE)} — فقط برای همین نشست نگه داشته می‌شود.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function bindAuthEvents(){
+  document.querySelectorAll(".auth-tabs button").forEach(b=>{
+    b.onclick = ()=>{ state.route = b.dataset.mode; render(); };
+  });
+  document.getElementById("api-base-input").onchange = (e)=>{ state.apiBase = e.target.value.trim() || DEFAULT_API_BASE; };
+
+  const alertBox = document.getElementById("auth-alert");
+  function showAuthError(msg){ alertBox.innerHTML = `<div class="alert">${esc(msg)}</div>`; }
+
+  const lf = document.getElementById("login-form");
+  if (lf) lf.onsubmit = async (e)=>{
+    e.preventDefault();
+    alertBox.innerHTML = "";
+    const fd = new FormData(lf);
+    const btn = lf.querySelector("button");
+    btn.disabled = true; btn.textContent = "در حال ورود...";
+    try{
+      const data = await api("/Api/User/Login", { method:"POST", auth:false, body:{
+        UniversityCode: fd.get("UniversityCode"), Password: fd.get("Password")
+      }});
+      applyTokens(data);
+      state.route = state.role === "Prof" ? "prof-exams" : "student-exams";
+      render();
+      toast("ورود با موفقیت انجام شد");
+    }catch(err){ showAuthError(err.message); }
+    finally{ btn.disabled=false; btn.textContent="ورود"; }
+  };
+
+  const rf = document.getElementById("register-form");
+  if (rf) rf.onsubmit = async (e)=>{
+    e.preventDefault();
+    alertBox.innerHTML = "";
+    const fd = new FormData(rf);
+    const btn = rf.querySelector("button");
+    btn.disabled = true; btn.textContent = "در حال ثبت‌نام...";
+    try{
+      await api("/Api/User/Register", { method:"POST", auth:false, body:{
+        UniversityCode: fd.get("UniversityCode"), Password: fd.get("Password"),
+        FirstName: fd.get("FirstName"), LastName: fd.get("LastName")
+      }});
+      toast("حساب ساخته شد — اکنون وارد شوید");
+      state.route = "login"; render();
+    }catch(err){ showAuthError(err.message); }
+    finally{ btn.disabled=false; btn.textContent="ساخت حساب"; }
+  };
+}
+
+/* ====================================================================
+   SHELL (post-login)
+==================================================================== */
+function renderShell(){
+  const isProf = state.role === "Prof";
+  const tabs = isProf
+    ? [["prof-exams","آزمون‌ها"],["prof-roster","فهرست شرکت‌کنندگان"],["prof-results","نتایج"]]
+    : [["student-exams","آزمون‌های من"]];
+
+  let body = "";
+  if (state.route === "prof-exams") body = renderProfExams();
+  else if (state.route === "prof-roster") body = renderProfRoster();
+  else if (state.route === "prof-results") body = renderProfResults();
+  else if (state.route === "student-exams") body = renderStudentExams();
+  else if (state.route === "student-take") body = renderTakeExam();
+  else body = `<div class="empty">صفحه‌ای انتخاب نشده است.</div>`;
+
+  return `
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">اتاق آزمون<sup>®</sup></div>
+      <div class="sub">${esc(state.apiBase)}</div>
+    </div>
+    <div class="top-right">
+      ${state.route === "student-take" ? `<span id="timer-slot"></span>` : ""}
+      <span class="stamp-badge ${isProf?'role-prof':'role-student'}">${isProf?'استاد':'دانشجو'} — ${esc(state.userName||'')}</span>
+      <button class="btn btn-ghost btn-sm" id="logout-btn">خروج</button>
+    </div>
+  </div>
+  <main>
+    ${state.route !== "student-take" ? `
+    <div class="tabs">
+      ${tabs.map(([key,label])=>`<button class="tab ${state.route===key?'active':''}" data-tab="${key}">${label}</button>`).join("")}
+    </div>` : ""}
+    <div id="view">${body}</div>
+  </main>`;
+}
+
+function bindShellEvents(){
+  document.getElementById("logout-btn").onclick = ()=>doLogout();
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.onclick = ()=>{ state.route = t.dataset.tab; render(); };
+  });
+  if (state.route === "prof-exams") bindProfExams();
+  else if (state.route === "prof-roster") bindProfRoster();
+  else if (state.route === "prof-results") bindProfResults();
+  else if (state.route === "student-exams") bindStudentExams();
+  else if (state.route === "student-take") bindTakeExam();
+}
+
+function refreshView(html){
+  document.getElementById("view").outerHTML = `<div id="view">${html}</div>`;
+}
+
+/* ====================================================================
+   PROF — EXAMS TAB  (create / list / edit / questions)
+==================================================================== */
+let profCache = { examsList: [], usersList: [], openExamId: null, openExamDetail: null };
+
+function renderProfExams(){
+  return `
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2>ساخت آزمون جدید</h2>
+    </div>
+    <form id="create-exam-form">
+      <div class="field"><label>عنوان آزمون</label><input type="text" name="ExamName" required /></div>
+      <div class="field"><label>توضیحات</label><textarea name="ExamDescription"></textarea></div>
+      <div class="field-row">
+        <div class="field"><label>زمان شروع</label><input type="datetime-local" name="StartTime" required /></div>
+        <div class="field"><label>مدت آزمون (دقیقه)</label><input type="number" name="ExamTime" min="1" value="60" required /></div>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary">ثبت آزمون</button></div>
+    </form>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-head"><h2>آزمون‌های من</h2><button class="btn btn-ghost btn-sm" id="refresh-exams">به‌روزرسانی</button></div>
+    <div id="exams-row-list" class="row-list"><div class="loading-line">در حال بارگذاری…</div></div>
+  </div>
+
+  <div id="exam-detail-slot"></div>
+  `;
+}
+
+function bindProfExams(){
+  document.getElementById("create-exam-form").onsubmit = async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const btn = e.target.querySelector("button");
+    btn.disabled = true;
+    try{
+      await api("/api/Exams/CreateExam", { method:"POST", body:{
+        ExamName: fd.get("ExamName"), ExamDescription: fd.get("ExamDescription"),
+        StartTime: new Date(fd.get("StartTime")).toISOString(), ExamTime: Number(fd.get("ExamTime"))
+      }});
+      toast("آزمون ساخته شد");
+      e.target.reset();
+      loadProfExamsList();
+    }catch(err){ toast(err.message, true); }
+    finally{ btn.disabled = false; }
+  };
+  document.getElementById("refresh-exams").onclick = loadProfExamsList;
+  loadProfExamsList();
+}
+
+async function loadProfExamsList(){
+  const box = document.getElementById("exams-row-list");
+  box.innerHTML = `<div class="loading-line">در حال بارگذاری…</div>`;
+  try{
+    const data = await api("/api/Exams/GetUserAndExamList");
+    profCache.examsList = data.ExamsList || [];
+    profCache.usersList = data.UserList || [];
+    if (!profCache.examsList.length){
+      box.innerHTML = `<div class="empty"><div class="glyph">∅</div>هنوز آزمونی نساخته‌اید.</div>`;
+      return;
+    }
+    box.innerHTML = profCache.examsList.map(ex => `
+      <div class="row-item">
+        <div class="row-main">
+          <div class="row-title">${esc(ex.ExamName)}</div>
+          <div class="row-meta">شناسه #${ex.ExamId}</div>
+        </div>
+        <div class="row-actions">
+          <button class="btn btn-sm" data-open-exam="${ex.ExamId}">مدیریت سؤالات</button>
+          <button class="btn btn-sm btn-ghost" data-del-exam="${ex.ExamId}">حذف</button>
+        </div>
+      </div>`).join("");
+    box.querySelectorAll("[data-open-exam]").forEach(b=>{
+      b.onclick = ()=>openExamDetail(Number(b.dataset.openExam));
+    });
+    box.querySelectorAll("[data-del-exam]").forEach(b=>{
+      b.onclick = async ()=>{
+        if (!confirm("این آزمون حذف شود؟")) return;
+        try{
+          await api("/api/Exams/DeleteExam", { method:"DELETE", query:{ examId: b.dataset.delExam }});
+          toast("آزمون حذف شد");
+          if (profCache.openExamId === Number(b.dataset.delExam)){
+            profCache.openExamId = null;
+            document.getElementById("exam-detail-slot").innerHTML = "";
+          }
+          loadProfExamsList();
+        }catch(err){ toast(err.message, true); }
+      };
+    });
+  }catch(err){
+    box.innerHTML = `<div class="alert">${esc(err.message)}</div>`;
+  }
+}
+
+async function openExamDetail(examId){
+  profCache.openExamId = examId;
+  const slot = document.getElementById("exam-detail-slot");
+  slot.innerHTML = `<div class="sheet"><div class="loading-line">در حال بارگذاری جزئیات آزمون…</div></div>`;
+  try{
+    const exam = await api(`/api/Exams/GetExamById/${examId}`);
+    profCache.openExamDetail = exam;
+    slot.innerHTML = renderExamDetail(exam);
+    bindExamDetail(exam);
+  }catch(err){
+    slot.innerHTML = `<div class="sheet"><div class="alert">${esc(err.message)}</div></div>`;
+  }
+}
+
+function renderExamDetail(exam){
+  const startLocal = new Date(exam.StartTime);
+  const startLocalInput = new Date(startLocal.getTime() - startLocal.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  return `
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2>ویرایش آزمون — ${esc(exam.ExamName)}</h2>
+      <span class="stamp-badge status-${examStatus(exam.StartTime, exam.ExamTime).key}">${examStatus(exam.StartTime, exam.ExamTime).label}</span>
+    </div>
+    <form id="edit-exam-form">
+      <div class="field"><label>عنوان آزمون</label><input type="text" name="ExamName" value="${esc(exam.ExamName)}" required /></div>
+      <div class="field"><label>توضیحات</label><textarea name="ExamDescription">${esc(exam.ExamDescription)}</textarea></div>
+      <div class="field-row">
+        <div class="field"><label>زمان شروع</label><input type="datetime-local" name="StartTime" value="${startLocalInput}" required /></div>
+        <div class="field"><label>مدت آزمون (دقیقه)</label><input type="number" name="ExamTime" min="1" value="${exam.ExamTime}" required /></div>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">ذخیره تغییرات</button></div>
+    </form>
+
+    <hr class="divider" />
+
+    <div class="sheet-head"><h2>سؤالات</h2><button class="btn btn-sm" id="add-question-btn">+ افزودن سؤال</button></div>
+    <div id="questions-list">${renderQuestionsList(exam.Question, exam.ExamId)}</div>
+    <div id="question-form-slot"></div>
+  </div>`;
+}
+
+function renderQuestionsList(questions, examId){
+  if (!questions || !questions.length) return `<div class="empty">هنوز سؤالی اضافه نشده است.</div>`;
+  return `<div class="row-list">` + questions.map(q => `
+    <div class="row-item">
+      <div class="row-main">
+        <div class="row-title">${esc(q.QuestionText)} <span class="qtype-tag">${esc(QTYPE_FA[q.QuestionType]||q.QuestionType)}</span></div>
+        <div class="row-meta">${q.Options && q.Options.length ? q.Options.map(o=>`${o.OptionKey}) ${esc(o.Option)}`).join(" · ") : "بدون گزینه"}</div>
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-sm btn-ghost" data-edit-q="${q.QuestionId}">ویرایش</button>
+        <button class="btn btn-sm btn-ghost" data-del-q="${q.QuestionId}" data-exam="${examId}">حذف</button>
+      </div>
+    </div>`).join("") + `</div>`;
+}
+
+function questionFormHtml(q){
+  const opts = (q && q.Options && q.Options.length) ? q.Options : [{Option:"",OptionKey:"A"},{Option:"",OptionKey:"B"}];
+  const qtype = q ? q.QuestionType : 2;
+  return `
+  <div class="sheet" style="margin-top:14px; background:var(--paper);">
+    <h3 style="font-size:15px; margin-bottom:12px;">${q ? "ویرایش سؤال" : "سؤال جدید"}</h3>
+    <form id="question-form">
+      <div class="field"><label>متن سؤال</label><textarea name="QuestionText" required>${q?esc(q.QuestionText):""}</textarea></div>
+      <div class="field-row">
+        <div class="field">
+          <label>نوع سؤال</label>
+          <select name="QuestionType" id="qtype-select" ${q?'disabled':''}>
+            ${Object.entries(QTYPE_FA).map(([v,l])=>`<option value="${v}" ${Number(v)===qtype?'selected':''}>${l}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field"><label>آدرس تصویر (اختیاری)</label><input type="text" name="ImageUrl" value="${q&&q.ImageUrl?esc(q.ImageUrl):""}" /></div>
+      </div>
+
+      <div id="mc-options-block" style="display:${qtype===2?'block':'none'}">
+        <label>گزینه‌ها</label>
+        <div id="options-rows">
+          ${opts.map(o=>optionRowHtml(o.OptionKey, o.Option)).join("")}
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="add-option-row">+ گزینه</button>
+        <div class="field" style="margin-top:10px;">
+          <label>کلید پاسخ صحیح</label>
+          <input type="text" name="CurrectAnswerMC" maxlength="1" value="${q&&q.CurrectAnswer?q.CurrectAnswer:''}" placeholder="مثلاً A" />
+        </div>
+      </div>
+
+      <div id="fib-answer-block" style="display:${qtype===3?'block':'none'}">
+        <div class="field"><label>پاسخ صحیح (یک نویسه)</label><input type="text" name="CurrectAnswerFIB" maxlength="1" value="${q&&q.CurrectAnswer?q.CurrectAnswer:''}" />
+        <div class="hint">ساختار داده فعلی API فقط یک نویسه برای پاسخ صحیح می‌پذیرد.</div></div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-sm">ذخیره سؤال</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="cancel-question">انصراف</button>
+      </div>
+    </form>
+  </div>`;
+}
+function optionRowHtml(key, text){
+  return `<div class="field-row option-row" style="grid-template-columns:60px 1fr auto; align-items:end; margin-bottom:8px;">
+    <input type="text" class="opt-key" maxlength="1" value="${esc(key||'')}" placeholder="A" />
+    <input type="text" class="opt-text" value="${esc(text||'')}" placeholder="متن گزینه" />
+    <button type="button" class="btn btn-ghost btn-sm remove-option" style="height:38px;">حذف</button>
+  </div>`;
+}
+
+function bindExamDetail(exam){
+  document.getElementById("edit-exam-form").onsubmit = async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    try{
+      await api(`/api/Exams/CreateExam/${exam.ExamId}`, { method:"PUT", body:{
+        ExamName: fd.get("ExamName"), ExamDescription: fd.get("ExamDescription"),
+        StartTime: new Date(fd.get("StartTime")).toISOString(), ExamTime: Number(fd.get("ExamTime"))
+      }});
+      toast("تغییرات ذخیره شد");
+      openExamDetail(exam.ExamId);
+      loadProfExamsList();
+    }catch(err){ toast(err.message, true); }
+  };
+
+  document.getElementById("add-question-btn").onclick = ()=>{
+    document.getElementById("question-form-slot").innerHTML = questionFormHtml(null);
+    bindQuestionForm(exam.ExamId, null);
+  };
+
+  document.querySelectorAll("[data-edit-q]").forEach(b=>{
+    b.onclick = ()=>{
+      const q = exam.Question.find(x=>x.QuestionId === Number(b.dataset.editQ));
+      document.getElementById("question-form-slot").innerHTML = questionFormHtml(q);
+      bindQuestionForm(exam.ExamId, q);
+    };
+  });
+  document.querySelectorAll("[data-del-q]").forEach(b=>{
+    b.onclick = async ()=>{
+      if (!confirm("این سؤال حذف شود؟")) return;
+      try{
+        await api(`/api/exams/${b.dataset.exam}/Questions/${b.dataset.delQ}`, { method:"DELETE" });
+        toast("سؤال حذف شد");
+        openExamDetail(exam.ExamId);
+      }catch(err){ toast(err.message, true); }
+    };
+  });
+}
+
+function bindQuestionForm(examId, existingQ){
+  const form = document.getElementById("question-form");
+  const qtypeSelect = document.getElementById("qtype-select");
+  const mcBlock = document.getElementById("mc-options-block");
+  const fibBlock = document.getElementById("fib-answer-block");
+
+  function syncBlocks(){
+    const v = Number(qtypeSelect.value);
+    mcBlock.style.display = v===2 ? "block" : "none";
+    fibBlock.style.display = v===3 ? "block" : "none";
+  }
+  if (!existingQ) qtypeSelect.onchange = syncBlocks;
+
+  document.getElementById("add-option-row").onclick = ()=>{
+    const rows = document.getElementById("options-rows");
+    const nextKey = String.fromCharCode(65 + rows.children.length);
+    rows.insertAdjacentHTML("beforeend", optionRowHtml(nextKey, ""));
+    bindOptionRemovers();
+  };
+  bindOptionRemovers();
+  function bindOptionRemovers(){
+    document.querySelectorAll(".remove-option").forEach(btn=>{
+      btn.onclick = ()=>btn.closest(".option-row").remove();
+    });
+  }
+
+  document.getElementById("cancel-question").onclick = ()=>{
+    document.getElementById("question-form-slot").innerHTML = "";
+  };
+
+  form.onsubmit = async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    const qtype = existingQ ? existingQ.QuestionType : Number(fd.get("QuestionType"));
+    const options = [];
+    document.querySelectorAll(".option-row").forEach(row=>{
+      const key = row.querySelector(".opt-key").value.trim();
+      const text = row.querySelector(".opt-text").value.trim();
+      if (key && text) options.push({ Option: text, OptionKey: key });
+    });
+    let currectAnswer = null;
+    if (qtype === 2) currectAnswer = (fd.get("CurrectAnswerMC")||"").trim() || null;
+    if (qtype === 3) currectAnswer = (fd.get("CurrectAnswerFIB")||"").trim() || null;
+
+    const payload = {
+      QuestionText: fd.get("QuestionText"),
+      ImageUrl: fd.get("ImageUrl") || null,
+      CurrectAnswer: currectAnswer,
+      Options: qtype === 2 ? options : []
+    };
+    if (!existingQ) payload.QuestionType = qtype;
+
+    try{
+      if (existingQ){
+        await api(`/api/exams/${examId}/Questions/${existingQ.QuestionId}`, { method:"PUT", body:payload });
+      } else {
+        await api(`/api/exams/${examId}/Questions`, { method:"POST", body:payload });
+      }
+      toast("سؤال ذخیره شد");
+      openExamDetail(examId);
+    }catch(err){ toast(err.message, true); }
+  };
+}
+
+/* ====================================================================
+   PROF — ROSTER TAB (assign students, see assigned list)
+==================================================================== */
+function renderProfRoster(){
+  return `
+  <div class="sheet">
+    <div class="sheet-head"><h2>تخصیص آزمون به دانشجو</h2></div>
+    <form id="assign-form">
+      <div class="field-row">
+        <div class="field">
+          <label>دانشجو</label>
+          <select name="studentId" id="student-select"><option value="">در حال بارگذاری…</option></select>
+        </div>
+        <div class="field">
+          <label>آزمون</label>
+          <select name="examId" id="exam-select"><option value="">در حال بارگذاری…</option></select>
+        </div>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary">تخصیص</button></div>
+    </form>
+  </div>
+  <div class="sheet">
+    <div class="sheet-head"><h2>فهرست تخصیص‌یافته‌ها</h2><button class="btn btn-ghost btn-sm" id="refresh-roster">به‌روزرسانی</button></div>
+    <div id="roster-list" class="row-list"><div class="loading-line">در حال بارگذاری…</div></div>
+  </div>`;
+}
+
+async function bindProfRoster(){
+  document.getElementById("refresh-roster").onclick = loadRoster;
+  try{
+    const data = await api("/api/Exams/GetUserAndExamList");
+    const studentSelect = document.getElementById("student-select");
+    const examSelect = document.getElementById("exam-select");
+    studentSelect.innerHTML = (data.UserList||[]).map(u=>`<option value="${u.UserId}">${esc(u.FirstName)} ${esc(u.LastName)} (${esc(u.UserName)})</option>`).join("") || `<option value="">دانشجویی ثبت نشده</option>`;
+    examSelect.innerHTML = (data.ExamsList||[]).map(e=>`<option value="${e.ExamId}">${esc(e.ExamName)}</option>`).join("") || `<option value="">آزمونی ساخته نشده</option>`;
+  }catch(err){ toast(err.message, true); }
+
+  document.getElementById("assign-form").onsubmit = async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const studentId = fd.get("studentId"), examId = fd.get("examId");
+    if (!studentId || !examId) { toast("دانشجو و آزمون را انتخاب کنید", true); return; }
+    try{
+      await api("/api/Exams/AddStudentAssign", { method:"POST", query:{ studentId, examId }});
+      toast("آزمون تخصیص داده شد");
+      loadRoster();
+    }catch(err){ toast(err.message, true); }
+  };
+
+  loadRoster();
+}
+
+async function loadRoster(){
+  const box = document.getElementById("roster-list");
+  box.innerHTML = `<div class="loading-line">در حال بارگذاری…</div>`;
+  try{
+    const list = await api("/api/Exams/GetStudentAssignList");
+    if (!list.length){ box.innerHTML = `<div class="empty">هنوز هیچ آزمونی تخصیص نیافته است.</div>`; return; }
+    box.innerHTML = list.map(a => `
+      <div class="row-item">
+        <div class="row-main">
+          <div class="row-title">${esc(a.FirstName||'')} ${esc(a.UserName?('('+a.UserName+')'):'')} ← ${esc(a.ExamName)}</div>
+          <div class="row-meta">${fmtDate(a.StartTime)} · ${a.ExamTime} دقیقه</div>
+        </div>
+        <div class="row-actions"><button class="btn btn-sm btn-ghost" data-del-assign="${a.StudentAssignId}">حذف</button></div>
+      </div>`).join("");
+    box.querySelectorAll("[data-del-assign]").forEach(b=>{
+      b.onclick = async ()=>{
+        try{
+          await api(`/api/Exams/DeleteStudentAssign/${b.dataset.delAssign}`, { method:"DELETE" });
+          toast("تخصیص حذف شد");
+          loadRoster();
+        }catch(err){ toast(err.message, true); }
+      };
+    });
+  }catch(err){ box.innerHTML = `<div class="alert">${esc(err.message)}</div>`; }
+}
+
+/* ====================================================================
+   PROF — RESULTS TAB
+==================================================================== */
+function renderProfResults(){
+  return `
+  <div class="sheet">
+    <div class="sheet-head"><h2>نتایج آزمون</h2></div>
+    <div class="field"><label>انتخاب آزمون</label><select id="results-exam-select"><option value="">در حال بارگذاری…</option></select></div>
+    <div id="results-students" class="row-list"></div>
+  </div>
+  <div id="answer-detail-slot"></div>`;
+}
+
+async function bindProfResults(){
+  const sel = document.getElementById("results-exam-select");
+  try{
+    const data = await api("/api/Exams/GetUserAndExamList");
+    sel.innerHTML = `<option value="">— انتخاب کنید —</option>` + (data.ExamsList||[]).map(e=>`<option value="${e.ExamId}">${esc(e.ExamName)}</option>`).join("");
+  }catch(err){ toast(err.message, true); }
+  sel.onchange = ()=>{
+    document.getElementById("answer-detail-slot").innerHTML = "";
+    if (sel.value) loadCompletedStudents(Number(sel.value));
+    else document.getElementById("results-students").innerHTML = "";
+  };
+}
+
+async function loadCompletedStudents(examId){
+  const box = document.getElementById("results-students");
+  box.innerHTML = `<div class="loading-line">در حال بارگذاری…</div>`;
+  try{
+    const list = await api(`/api/exams/${examId}/Answers/GetStudentsCompeletExamList`);
+    if (!list.length){ box.innerHTML = `<div class="empty">هنوز کسی این آزمون را تکمیل نکرده است.</div>`; return; }
+    box.innerHTML = list.map(s=>`
+      <div class="row-item">
+        <div class="row-main"><div class="row-title">${esc(s.FirstName)} ${esc(s.LastName)}</div><div class="row-meta">${esc(s.UserName)}</div></div>
+        <div class="row-actions"><button class="btn btn-sm" data-view-stud="${esc(s.StudId)}">مشاهده پاسخ‌ها</button></div>
+      </div>`).join("");
+    box.querySelectorAll("[data-view-stud]").forEach(b=>{
+      b.onclick = ()=>loadStudentAnswers(examId, b.dataset.viewStud);
+    });
+  }catch(err){ box.innerHTML = `<div class="alert">${esc(err.message)}</div>`; }
+}
+
+async function loadStudentAnswers(examId, studId){
+  const slot = document.getElementById("answer-detail-slot");
+  slot.innerHTML = `<div class="sheet"><div class="loading-line">در حال بارگذاری پاسخ‌ها…</div></div>`;
+  try{
+    const data = await api(`/api/exams/${examId}/Answers/GetStudentAnswer`, { query:{ studId }});
+    slot.innerHTML = `
+    <div class="sheet">
+      <div class="sheet-head"><h2>${esc(data.FistName)} ${esc(data.LastName)} — ${esc(data.ExamName)}</h2></div>
+      <div class="muted mono">${esc(data.UniversityCode)} · ${fmtDate(data.StartTime)} · ${data.ExamTime} دقیقه</div>
+      <hr class="divider" />
+      ${(data.Answers||[]).map(a=>renderAnswerBlock(a)).join("")}
+    </div>`;
+  }catch(err){ slot.innerHTML = `<div class="sheet"><div class="alert">${esc(err.message)}</div></div>`; }
+}
+
+function renderAnswerBlock(a){
+  const statusBadge = a.IsCorrect === true ? `<span class="stamp-badge status-open">صحیح</span>`
+    : a.IsCorrect === false ? `<span class="stamp-badge status-closed">نادرست</span>`
+    : `<span class="stamp-badge status-upcoming">نیازمند بررسی</span>`;
+  let body = "";
+  if (a.QuestionType === 2 && a.Options && a.Options.length){
+    body = a.Options.map(o=>{
+      const isUser = String(o.OptionKey) === String(a.UserAnswer);
+      return `<div class="bubble-option ${isUser?'selected':''}"><div class="bubble">${esc(o.OptionKey)}</div><div class="option-text">${esc(o.Option)}</div></div>`;
+    }).join("");
+  } else {
+    body = `<div class="muted">پاسخ دانشجو: <strong>${a.UserAnswer ? esc(a.UserAnswer) : '—'}</strong></div>`;
+  }
+  return `<div style="margin-bottom:18px;">
+    <div class="sheet-head" style="margin-bottom:8px;"><div class="row-title">${esc(a.QuestionText)} <span class="qtype-tag">${esc(QTYPE_FA[a.QuestionType]||a.QuestionType)}</span></div>${statusBadge}</div>
+    ${body}
+  </div>`;
+}
+
+/* ====================================================================
+   STUDENT — MY EXAMS
+==================================================================== */
+function renderStudentExams(){
+  return `
+  <div class="sheet">
+    <div class="sheet-head"><h2>آزمون‌های من</h2><button class="btn btn-ghost btn-sm" id="refresh-student-exams">به‌روزرسانی</button></div>
+    <div id="student-exams-list" class="row-list"><div class="loading-line">در حال بارگذاری…</div></div>
+  </div>`;
+}
+
+function bindStudentExams(){
+  document.getElementById("refresh-student-exams").onclick = loadStudentExams;
+  loadStudentExams();
+}
+
+async function loadStudentExams(){
+  const box = document.getElementById("student-exams-list");
+  box.innerHTML = `<div class="loading-line">در حال بارگذاری…</div>`;
+  try{
+    const list = await api("/api/Exams/GetStudentAssignList");
+    if (!list.length){ box.innerHTML = `<div class="empty"><div class="glyph">∅</div>هنوز هیچ آزمونی برای شما تخصیص نیافته است.</div>`; return; }
+    box.innerHTML = list.map(a=>{
+      const st = examStatus(a.StartTime, a.ExamTime);
+      return `
+      <div class="row-item">
+        <div class="row-main">
+          <div class="row-title">${esc(a.ExamName)}</div>
+          <div class="row-meta">${fmtDate(a.StartTime)} · ${a.ExamTime} دقیقه</div>
+        </div>
+        <div class="row-actions">
+          <span class="stamp-badge status-${st.key}">${st.label}</span>
+          <button class="btn btn-sm ${st.key!=='open'?'btn-ghost':'btn-stamp'}" data-enter="${a.ExamId}" ${st.key!=='open'?'disabled':''}>ورود به آزمون</button>
+        </div>
+      </div>`;
+    }).join("");
+    box.querySelectorAll("[data-enter]").forEach(b=>{
+      b.onclick = ()=>{ state.route="student-take"; state.examId = Number(b.dataset.enter); render(); };
+    });
+  }catch(err){ box.innerHTML = `<div class="alert">${esc(err.message)}</div>`; }
+}
+
+/* ====================================================================
+   STUDENT — TAKE EXAM
+==================================================================== */
+let takeExamCache = { exam:null, answers:{}, endsAt:null, submitted:false };
+
+function renderTakeExam(){
+  return `<div id="take-exam-root"><div class="sheet"><div class="loading-line">در حال بارگذاری آزمون…</div></div></div>`;
+}
+
+async function bindTakeExam(){
+  clearInterval(state.tick);
+  takeExamCache = { exam:null, answers:{}, endsAt:null, submitted:false };
+  const root = document.getElementById("take-exam-root");
+  try{
+    const exam = await api(`/api/Exams/GetExamById/${state.examId}`);
+    takeExamCache.exam = exam;
+    takeExamCache.endsAt = new Date(exam.StartTime).getTime() + exam.ExamTime*60000;
+    root.innerHTML = `
+      <div class="sheet">
+        <div class="sheet-head">
+          <h2>${esc(exam.ExamName)}</h2>
+          <button class="btn btn-ghost btn-sm" id="back-to-list">بازگشت به فهرست</button>
+        </div>
+        <div class="muted">${esc(exam.ExamDescription||'')}</div>
+      </div>
+      <form id="answers-form">
+        ${exam.Question.map((q,i)=>renderQuestionField(q,i)).join("")}
+        <div class="sheet" style="text-align:left;">
+          <button type="submit" class="btn btn-stamp" style="width:100%;">ثبت نهایی پاسخ‌ها</button>
+        </div>
+      </form>`;
+    document.getElementById("back-to-list").onclick = ()=>{
+      clearInterval(state.tick);
+      state.route = "student-exams"; render();
+    };
+    document.getElementById("answers-form").onsubmit = submitExamAnswers;
+    bindQuestionInputs();
+    startExamTimer();
+  }catch(err){
+    root.innerHTML = `<div class="sheet"><div class="alert">${esc(err.message)}</div>
+      <button class="btn btn-ghost btn-sm" id="back-to-list2" style="margin-top:10px;">بازگشت</button></div>`;
+    document.getElementById("back-to-list2").onclick = ()=>{ state.route="student-exams"; render(); };
+  }
+}
+
+function renderQuestionField(q, idx){
+  let inputArea = "";
+  if (q.QuestionType === 2){ // MultiChoice
+    inputArea = (q.Options||[]).map(o=>`
+      <div class="bubble-option" data-q="${q.QuestionId}" data-val="${esc(o.OptionKey)}">
+        <div class="bubble">${esc(o.OptionKey)}</div><div class="option-text">${esc(o.Option)}</div>
+      </div>`).join("");
+  } else if (q.QuestionType === 3){ // FillInBlank
+    inputArea = `<input type="text" class="answer-text" data-q="${q.QuestionId}" placeholder="پاسخ کوتاه…" />`;
+  } else { // Descriptive
+    inputArea = `<textarea class="answer-text" data-q="${q.QuestionId}" placeholder="پاسخ تشریحی…"></textarea>`;
+  }
+  return `
+  <div class="sheet">
+    <div class="row-title mono" style="color:var(--graphite); font-size:12px; margin-bottom:6px;">سؤال ${idx+1} از ${takeExamCache.exam.Question.length} — <span class="qtype-tag">${esc(QTYPE_FA[q.QuestionType]||q.QuestionType)}</span></div>
+    <div style="font-size:15.5px; font-weight:600; margin-bottom:12px;">${esc(q.QuestionText)}</div>
+    ${q.ImageUrl ? `<img src="${esc(q.ImageUrl)}" alt="" style="max-width:100%; border-radius:8px; margin-bottom:12px; border:1px solid var(--rule);" />` : ""}
+    ${inputArea}
+  </div>`;
+}
+
+function bindQuestionInputs(){
+  document.querySelectorAll(".bubble-option").forEach(opt=>{
+    opt.onclick = ()=>{
+      const qid = opt.dataset.q;
+      document.querySelectorAll(`.bubble-option[data-q="${qid}"]`).forEach(o=>o.classList.remove("selected"));
+      opt.classList.add("selected");
+      takeExamCache.answers[qid] = opt.dataset.val;
+    };
+  });
+  document.querySelectorAll(".answer-text").forEach(input=>{
+    input.oninput = ()=>{ takeExamCache.answers[input.dataset.q] = input.value; };
+  });
+}
+
+function startExamTimer(){
+  function tick(){
+    const remain = takeExamCache.endsAt - Date.now();
+    const slot = document.getElementById("timer-slot");
+    if (slot) slot.innerHTML = `<span class="exam-timer ${remain < 60000 ? 'low':''}">${remain<=0?'00:00:00':fmtRemain(remain)}</span>`;
+    if (remain <= 0 && !takeExamCache.submitted){
+      clearInterval(state.tick);
+      toast("زمان آزمون به پایان رسید — پاسخ‌ها به‌صورت خودکار ثبت شد", true);
+      submitExamAnswers(null, true);
+    }
+  }
+  tick();
+  state.tick = setInterval(tick, 1000);
+}
+
+async function submitExamAnswers(e, auto=false){
+  if (e) e.preventDefault();
+  if (takeExamCache.submitted) return;
+  takeExamCache.submitted = true;
+  clearInterval(state.tick);
+  const exam = takeExamCache.exam;
+  const payload = exam.Question.map(q=>({
+    QuestionId: q.QuestionId,
+    QuestionType: q.QuestionType,
+    UserAnswer: takeExamCache.answers[q.QuestionId] ?? null
+  }));
+  try{
+    await api(`/api/exams/${exam.ExamId}/Answers/SubmitAnswers`, { method:"POST", body: payload });
+    toast(auto ? "پاسخ‌ها به‌صورت خودکار ثبت شد" : "پاسخ‌های شما ثبت شد");
+    state.route = "student-exams"; render();
+  }catch(err){
+    takeExamCache.submitted = false;
+    toast(err.message, true);
+  }
+}
+
+/* ====================================================================
+   BOOT
+==================================================================== */
+render();
+</script>
+</body>
+</html>

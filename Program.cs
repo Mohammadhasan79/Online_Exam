@@ -119,7 +119,7 @@ using (var scope = app.Services.CreateScope())
     var roleManager =  service.GetRequiredService<RoleManager<IdentityRole>>();
     await Seed.RoleSeeder(roleManager);
 }
-
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -2,7 +2,7 @@
 {
     public class Result<T> : Result
     {
-        public T Data { get; set; }
+        public T? Data { get; set; }
         public static  Result<T> Ok(T data, string message = "Success")
         {
             return new Result<T>
@@ -28,7 +28,7 @@
     public class Result
     {
         public bool Success { get; set; }
-        public string Message { get; set; }
+        public string? Message { get; set; }
         public static Result Ok(string message = "Success")
         {
             return new Result

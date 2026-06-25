@@ -4,7 +4,7 @@
     {
         public string ExamName { get; set; } = string.Empty;
         public string ExamDescription { get; set; } = string.Empty;
-        public DateTime StartTime { get; set; }
+        public DateTime StartTime { get; set; } = DateTime.UtcNow;
         public int ExamTime { get; set; }
 
     }

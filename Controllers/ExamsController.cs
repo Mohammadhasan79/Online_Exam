@@ -21,22 +21,21 @@ namespace OnlineExam.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetStudentAssignList()
+        [Authorize(Roles = "Prof")]
+        public async Task<IActionResult> GetUserAndExamList()
         {
             var userId = UserId();
-            var userRole = UserRole();
-            var result = await _examService.GetStudentAssignListAsync(userId!, userRole);
+            var result = await _examService.GetUserExamListAsync(userId!);
             if (!result.Success) return BadRequest(result);
             return Ok(result);
         }
 
-
         [HttpGet("[action]")]
-        [Authorize(Roles = "Prof")]
-        public async Task<IActionResult> GetUserExamList()
+        public async Task<IActionResult> GetStudentAssignList()
         {
             var userId = UserId();
-            var result = await _examService.GetUserExamListAsync(userId!);
+            var userRole = UserRole();
+            var result = await _examService.GetStudentAssignListAsync(userId!, userRole!);
             if (!result.Success) return BadRequest(result);
             return Ok(result);
         }
@@ -49,7 +48,7 @@ namespace OnlineExam.Controllers
             if (!result.Success) return BadRequest(result);
             return Ok(result);
         }
-        [HttpDelete("{studentAssignId}")]
+        [HttpDelete("[action]/{studentAssignId}")]
         [Authorize(Roles = "Prof")]
         public async Task<IActionResult> DeleteStudentAssign(int studentAssignId)
         {
@@ -58,7 +57,7 @@ namespace OnlineExam.Controllers
             if (!result.Success) return BadRequest(result);
             return Ok(result);
         }
-        [HttpGet("{examId}")]
+        [HttpGet("[action]/{examId}")]
         public async Task<IActionResult> GetExamById(int examId)
         {
             var userId = UserId();
@@ -68,7 +67,7 @@ namespace OnlineExam.Controllers
             return Ok(result);
         }
         [HttpGet("[action]")]
-        [Authorize(Roles = "Prof")]
+        [Authorize(Roles = "Prof,Student")]
         public async Task<IActionResult> GetExamByUserId()
         {
             var userId = UserId();
@@ -77,7 +76,7 @@ namespace OnlineExam.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         public async Task<IActionResult> CreateExam(CreateExamDto examDto)
         {
             var userId = UserId();
@@ -85,7 +84,7 @@ namespace OnlineExam.Controllers
             if (!result.Success) return BadRequest(result);
             return Ok(result);
         }
-        [HttpPut("{examId}")]
+        [HttpPut("[action]/{examId}")]
         public async Task<IActionResult> CreateExam(int examId, CreateExamDto examDto)
         {
             var userId = UserId();
@@ -93,7 +92,7 @@ namespace OnlineExam.Controllers
             if (!result.Success) return BadRequest(result);
             return Ok(result);
         }
-        [HttpDelete]
+        [HttpDelete("[action]")]
         public async Task<IActionResult> DeleteExam(int examId)
         {
             var userId = UserId();

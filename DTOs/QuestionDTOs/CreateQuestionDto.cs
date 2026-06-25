@@ -7,6 +7,7 @@ namespace OnlineExam.DTOs.QuestionDTOs
     {
         public string QuestionText { get; set; } = string.Empty;
         public QuestionType QuestionType { get; set; }
+        public string? ImageUrl { get; set; } = string.Empty;
         public char? CurrectAnswer { get; set; }
         public List<CreateQuestionOptionDto> Options { get; set; } = [];
     }

@@ -25,6 +25,7 @@ namespace OnlineExam.Service
                 QuestionText = questionDto.QuestionText,
                 QuestionType = questionDto.QuestionType,
                 CurrectAnswer = questionDto.CurrectAnswer,
+                ImageUrl = questionDto.ImageUrl,
                 ExamId = examId,
                 Options = questionDto.Options.Select(o => new QuestionOption
                 {
@@ -45,6 +46,7 @@ namespace OnlineExam.Service
 
             question.QuestionText = questionDto.QuestionText;
             question.CurrectAnswer = questionDto.CurrectAnswer;
+            question.ImageUrl = questionDto.ImageUrl;
 
             question.Options.Clear();
             question.Options = questionDto.Options.Select(o =>

@@ -107,26 +107,27 @@ namespace OnlineExam.Service
             {
                 isAccess = await _examRepository
                     .CheckHaveExam(examId, userId) 
-                    && exam.StartTime <= DateTime.Now 
-                    && exam.StartTime.AddMinutes(exam.ExamTime) > DateTime.Now;    
+                    && exam.StartTime <= DateTime.UtcNow 
+                    && exam.StartTime.AddMinutes(exam.ExamTime) > DateTime.UtcNow;    
             }
             if(!isAccess) return Result<ShowExamDto>.Fail("Forbid");
 
             var showExam = new ShowExamDto
             {
-                Id = exam.Id,
+                ExamId = exam.Id,
                 ExamName = exam.ExamName,
                 ExamDescription = exam.ExamDescription,
                 StartTime = exam.StartTime,
                 ExamTime = exam.ExamTime,
                 Question = exam.Question.Select(q => new ShowQuestionDto
                 {
-                    Id = q.Id,
+                    QuestionId = q.Id,
                     QuestionText = q.QuestionText,
                     QuestionType = q.QuestionType,
+                    ImageUrl = q.ImageUrl,
                     Options = q.Options.Select(o => new ShowQuestionOptionDto
                     {
-                        Id = o.Id,
+                        OptionId = o.Id,
                         Option = o.Option,
                         OptionKey = o.OptionKey
                     }).ToList()
@@ -135,28 +136,16 @@ namespace OnlineExam.Service
             return Result<ShowExamDto>.Ok(showExam);
         }
 
-        public async Task<Result<List<ShowExamDto>>> GetExamAndQuestionByUserIdAsync(string userId)
+        public async Task<Result<List<ShowExamForListDto>>> GetExamAndQuestionByUserIdAsync(string userId)
         {
             var exams = await _examRepository.GetExamByUserIdAsync(userId);
-            return Result<List<ShowExamDto>>.Ok(exams.Select(e => new ShowExamDto
+            return Result<List<ShowExamForListDto>>.Ok(exams.Select(e => new ShowExamForListDto
             {
-                Id = e.Id,
+                ExamId = e.Id,
                 ExamName = e.ExamName,
                 ExamDescription = e.ExamDescription,
                 StartTime = e.StartTime,
                 ExamTime = e.ExamTime,
-                Question = e.Question.Select(q => new ShowQuestionDto
-                {
-                    Id = q.Id,
-                    QuestionText = q.QuestionText,
-                    QuestionType = q.QuestionType,
-                    Options = q.Options.Select(o => new ShowQuestionOptionDto
-                    {
-                        Id = o.Id,
-                        Option = o.Option,
-                        OptionKey = o.OptionKey
-                    }).ToList()
-                }).ToList(),
             }).ToList());
             
         }

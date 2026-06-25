@@ -1,4 +1,6 @@
 using System.Text;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +20,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+//fluentvalidator
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+});
 //DbContext
 builder.Services.AddDbContext<OnlineExamDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -41,6 +49,8 @@ builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IExamService, ExamService>();
 builder.Services.AddScoped<IExamRepository, ExamRepository>();
+builder.Services.AddScoped<IAnswerService, AnswerService>();
+builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //*//

@@ -35,17 +35,5 @@ namespace OnlineExam.Controllers
             if (!result.Success) return BadRequest(result);
             return Ok(result);
         }
-        [HttpGet]
-        [Authorize(Roles ="Student")]
-        public async Task<IActionResult> Student()
-        {
-            return Ok("hi");
-        }
-        [HttpGet("[action]")]
-        [Authorize(Roles = "Prof")]
-        public async Task<IActionResult> Prof()
-        {
-            return Ok("hi");
-        }
     }
 }

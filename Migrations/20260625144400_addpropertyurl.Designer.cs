@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineExam.DbContext;
 
@@ -11,9 +12,11 @@ using OnlineExam.DbContext;
 namespace OnlineExam.Migrations
 {
     [DbContext(typeof(OnlineExamDbContext))]
-    partial class OnlineExamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260625144400_addpropertyurl")]
+    partial class addpropertyurl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -235,9 +238,6 @@ namespace OnlineExam.Migrations
                     b.Property<int>("ExamId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("QuestionText")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -259,6 +259,9 @@ namespace OnlineExam.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Option")
                         .IsRequired()

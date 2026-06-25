@@ -115,7 +115,7 @@ namespace OnlineExam.Service
             {
                 Token = newRefreshToken,
                 UserId = userToken.UserId,
-                ExpireTime = DateTime.Now.AddDays(7)
+                ExpireTime = DateTime.UtcNow.AddDays(7)
             };
 
             userToken.IsRevoked = true;
@@ -151,7 +151,7 @@ namespace OnlineExam.Service
                 issuer,
                 audience,
                 claims,
-                expires : DateTime.Now.AddMinutes(expiry),
+                expires : DateTime.UtcNow.AddMinutes(expiry),
                 signingCredentials : credentials
                 );
             return new JwtSecurityTokenHandler().WriteToken(token);

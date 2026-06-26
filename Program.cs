@@ -16,6 +16,18 @@ using OnlineExam.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("frontend", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:5198",
+                "https://localhost:9050"
+              )
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 // Add services to the container.
 
 builder.Services.AddEndpointsApiExplorer();
@@ -121,6 +133,7 @@ using (var scope = app.Services.CreateScope())
 }
 app.UseStaticFiles();
 app.UseHttpsRedirection();
+app.UseCors("frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 

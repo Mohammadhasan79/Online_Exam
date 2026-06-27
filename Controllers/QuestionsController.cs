@@ -9,7 +9,7 @@ namespace OnlineExam.Controllers
 {
     [ApiController]
     [Route("api/exams/{examId}/[controller]")]
-    [Authorize(Roles = "Prof,Student")]
+    [Authorize(Roles = "Prof")]
     public class QuestionsController : ControllerBase
     {
         private readonly IQuestionService _questionService;
@@ -28,7 +28,7 @@ namespace OnlineExam.Controllers
         }
 
         [HttpPut("{questionId}")]
-        public async Task<IActionResult> UpdateQuestion(int questionId, EditQuestionDto questionDto)
+        public async Task<IActionResult> UpdateQuestion(int examId, int questionId, EditQuestionDto questionDto)
         {
             var result = await _questionService.UpdateQuestionAsync(questionId, questionDto);
             if (!result.Success) return BadRequest(result);
@@ -36,7 +36,7 @@ namespace OnlineExam.Controllers
         }
 
         [HttpDelete("{questionId}")]
-        public async Task<IActionResult> DeleteQuestion(int questionId)
+        public async Task<IActionResult> DeleteQuestion(int examId, int questionId)
         {
             var result = await _questionService.DeleteQuestionAsync(questionId);
             if (!result.Success) return BadRequest(result);

@@ -18,12 +18,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("frontend", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:5198",
-                "https://localhost:9050"
-              )
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -131,9 +128,8 @@ using (var scope = app.Services.CreateScope())
     var roleManager =  service.GetRequiredService<RoleManager<IdentityRole>>();
     await Seed.RoleSeeder(roleManager);
 }
-app.UseStaticFiles();
 app.UseHttpsRedirection();
-app.UseCors("frontend");
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 

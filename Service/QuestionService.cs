@@ -1,6 +1,7 @@
 ﻿using OnlineExam.Common;
 using OnlineExam.DTOs.QuestionDTOs;
 using OnlineExam.Entity;
+using OnlineExam.Repository;
 using OnlineExam.RepositoryInterfaces;
 using OnlineExam.ServiceInterfaces;
 using OnlineExam.UnitOfWork;
@@ -64,6 +65,9 @@ namespace OnlineExam.Service
         }
         public async Task<Result> DeleteQuestionAsync(int questionId)
         {
+            var dependency = await _questionRepository.CheckDependencyInAnswer(questionId);
+            if (dependency) return Result.Fail("This Question Have Ansewr ");
+
             var question = await _questionRepository.GetQuestionById(questionId);
             if (question == null) return Result.Fail("Question Not Exist");
             _questionRepository.DeleteAsync(question);

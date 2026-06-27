@@ -92,5 +92,10 @@ namespace OnlineExam.Repository
         {
             await _context.Answers.AddRangeAsync(answers);
         }
+        public void DeleteAnswersAsync(int examId, string studId)
+        {
+           var answer = _context.Answers.Where(a => a.ExamId == examId && a.UserId == studId);
+            _context.Answers.RemoveRange(answer);
+        }
     }
 }

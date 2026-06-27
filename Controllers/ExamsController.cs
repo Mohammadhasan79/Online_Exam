@@ -11,7 +11,7 @@ namespace OnlineExam.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles ="Prof,Student")]
+    [Authorize(Roles = "Prof,Student")]
     public class ExamsController : ControllerBase
     {
         private readonly IExamService _examService;
@@ -67,7 +67,7 @@ namespace OnlineExam.Controllers
             return Ok(result);
         }
         [HttpGet("[action]")]
-        [Authorize(Roles = "Prof,Student")]
+        [Authorize(Roles = "Prof")]
         public async Task<IActionResult> GetExamByUserId()
         {
             var userId = UserId();
@@ -77,6 +77,7 @@ namespace OnlineExam.Controllers
         }
 
         [HttpPost("[action]")]
+        [Authorize(Roles = "Prof")]
         public async Task<IActionResult> CreateExam(CreateExamDto examDto)
         {
             var userId = UserId();
@@ -85,6 +86,7 @@ namespace OnlineExam.Controllers
             return Ok(result);
         }
         [HttpPut("[action]/{examId}")]
+        [Authorize(Roles = "Prof")]
         public async Task<IActionResult> CreateExam(int examId, CreateExamDto examDto)
         {
             var userId = UserId();
@@ -93,6 +95,7 @@ namespace OnlineExam.Controllers
             return Ok(result);
         }
         [HttpDelete("[action]")]
+        [Authorize(Roles = "Prof")]
         public async Task<IActionResult> DeleteExam(int examId)
         {
             var userId = UserId();

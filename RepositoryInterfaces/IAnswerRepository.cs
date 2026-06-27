@@ -12,5 +12,6 @@ namespace OnlineExam.RepositoryInterfaces
         Task<ExamAndQuestionAnswer?> GetExamWithAnswersAsync(int examId, string userId);
         Task<bool> IsCorrect(int questionId, string userAnswer);
         Task AddAnswers(List<Answer> answers);
+        void DeleteAnswersAsync(int examId, string studId);
     }
 }

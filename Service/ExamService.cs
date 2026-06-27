@@ -84,6 +84,9 @@ namespace OnlineExam.Service
         }
         public async Task<Result> DeleteExamAsync(int examId, string userId)
         {
+            var dependency = await _examRepository.CheckDependencyInAnswer(examId);
+            if (dependency) return Result.Fail("This Exam Have Ansewr ");
+
             var exam = await _examRepository.GetByExamIdAsync(examId);
             if (exam == null) return Result.Fail("Exam Not Found");
 

@@ -31,5 +31,9 @@ namespace OnlineExam.Repository
                 .Include(o => o.Options)
                 .FirstOrDefaultAsync(a => a.Id == questionId);
         }
+        public async Task<bool> CheckDependencyInAnswer(int questionId)
+        {
+            return await _context.Answers.AnyAsync(a => a.QuestionId == questionId);
+        }
     }
 }

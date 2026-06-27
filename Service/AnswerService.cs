@@ -74,6 +74,15 @@ namespace OnlineExam.Service
             return Result <ExamAndQuestionAnswer?>.Ok(answer);
 
         }
+        public async Task<Result> DeleteStudentAnswerAsync(int examId, string userId, string studId)
+        {
+            var checkAccess = await _answerRepository.CheckCreatorAccessAsync(examId, userId);
+
+            if (!checkAccess) return Result.Fail("Forbid.");
+            _answerRepository.DeleteAnswersAsync(examId, studId);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Ok();
+        }
 
     }
 }

@@ -44,6 +44,15 @@ namespace OnlineExam.Controllers
             return Ok(result);
         }
 
+        [HttpDelete("[action]")]
+        [Authorize(Roles = "Prof")]
+        public async Task<IActionResult> DeleteStudentAnswer(int examId, string studId)
+        {
+            var userId = UserId();
+            var result = await _answerService.DeleteStudentAnswerAsync(examId, userId!, studId);
+            if (!result.Success) return BadRequest(result);
+            return Ok(result);
+        }
         private string? UserId()
         {
             return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

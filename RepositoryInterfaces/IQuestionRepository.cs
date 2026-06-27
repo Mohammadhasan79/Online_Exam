@@ -7,7 +7,8 @@ namespace OnlineExam.RepositoryInterfaces
         Task AddAsync(Question question);
         void UpdateAsync(Question question);
         void DeleteAsync(Question question);
-        Task<Question?> GetQuestionById(int questionId); 
+        Task<Question?> GetQuestionById(int questionId);
+        Task<bool> CheckDependencyInAnswer(int questionId);
 
     }
 }

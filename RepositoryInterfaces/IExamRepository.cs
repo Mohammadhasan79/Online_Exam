@@ -14,6 +14,7 @@ namespace OnlineExam.RepositoryInterfaces
         Task<List<ExamForListDto>> GetExamListByUserId(string userId);
         Task<List<UserForListDto>> GetAllUserForList();
         Task<bool> CheckUserAndExamExist(string userId, string studentId, int examId);
+        Task<bool> CheckDependencyInAnswer(int examId);
         Task AddExamToUser(StudentAssign newAdd);
         Task<StudentAssign?> GetStudentAssign(string userId, int studentAssignId);
         void DeleteStudentAssignAsync(StudentAssign studentAssign);

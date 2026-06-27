@@ -9,5 +9,6 @@ namespace OnlineExam.ServiceInterfaces
         Task<Result> AddAnswerListAsync(int examId,string userId, List<CreateAnswerDto> answerList);
         Task<Result<List<StudCompleteListDto>>> GetStudCompeleteExamList(int examId, string userId);
         Task<Result<ExamAndQuestionAnswer?>> GetStudentAnswerAsync(int examId, string userId, string studId);
+        Task<Result> DeleteStudentAnswerAsync(int examId, string userId, string studId);
     }
 }

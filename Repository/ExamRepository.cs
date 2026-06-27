@@ -97,6 +97,9 @@ namespace OnlineExam.Repository
                             .ThenInclude(o => o.Options)
                             .Where(a => a.CreateBy == userId).ToListAsync();
         }
-
+        public async Task<bool> CheckDependencyInAnswer(int examId)
+        {
+            return await _context.Answers.AnyAsync(a => a.ExamId == examId);
+        }
     }
 }
